@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Edit category — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="page">
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow"><a href="{{ url_for('list_categories') }}">Categories</a></p>
+            <h1 class="page-title">Edit category</h1>
+        </div>
+    </header>
+
+    <div class="form-card">
+        {% if error %}
+            <div class="auth-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('edit_category', category_id=category.id) }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label for="name">Category name</label>
+                <input type="text" id="name" name="name"
+                       class="form-input" maxlength="40" required
+                       value="{{ category.name }}">
+            </div>
+            <div class="form-actions">
+                <a class="btn-ghost" href="{{ url_for('list_categories') }}">Cancel</a>
+                <button type="submit" class="btn-primary">Save changes</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+{% endblock %}

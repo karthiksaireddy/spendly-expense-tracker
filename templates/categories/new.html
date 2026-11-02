@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}New category — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="page">
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow"><a href="{{ url_for('list_categories') }}">Categories</a></p>
+            <h1 class="page-title">New category</h1>
+        </div>
+    </header>
+
+    <div class="form-card">
+        {% if error %}
+            <div class="auth-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('new_category') }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            <div class="form-group">
+                <label for="name">Category name</label>
+                <input type="text" id="name" name="name"
+                       class="form-input" placeholder="e.g. Groceries"
+                       maxlength="40" required autofocus
+                       value="{{ form.name if form else '' }}">
+            </div>
+            <div class="form-actions">
+                <a class="btn-ghost" href="{{ url_for('list_categories') }}">Cancel</a>
+                <button type="submit" class="btn-primary">Add category</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+{% endblock %}

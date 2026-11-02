@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="page">
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow">Monthly summary</p>
+            <h1 class="page-title">{{ month_label }}</h1>
+        </div>
+        <form method="GET" action="{{ url_for('dashboard') }}" class="month-picker">
+            <label for="month" class="sr-only">Month</label>
+            <input type="month" id="month" name="month"
+                   value="{{ '%04d-%02d' | format(year, month) }}" class="form-input form-input-sm">
+            <button type="submit" class="btn-ghost btn-sm">View</button>
+        </form>
+    </header>
+
+    <div class="stat-grid">
+        <div class="stat-card stat-card-balance">
+            <span class="stat-label">Total balance</span>
+            <span class="stat-value {% if balance < 0 %}text-danger{% endif %}">{{ balance | money }}</span>
+        </div>
+        <div class="stat-card stat-card-income">
+            <span class="stat-label">Income this month</span>
+            <span class="stat-value text-success">{{ total_income_this_month | money }}</span>
+        </div>
+        <div class="stat-card stat-card-expense">
+            <span class="stat-label">Expenses this month</span>
+            <span class="stat-value text-danger">{{ total_expenses_this_month | money }}</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-label">Last month</span>
+            <span class="stat-value">{{ total_last_month | money }}</span>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <article class="card">
+            <header class="card-header">
+                <h2 class="card-title">Spending by category</h2>
+            </header>
+            {% if by_category %}
+                <div class="chart-wrap">
+                    <canvas id="category-chart"></canvas>
+                </div>
+                <ul class="category-list">
+                    {% for row in by_category[:5] %}
+                        <li class="category-list-item">
+                            <span class="category-list-name">{{ row.category_name }}</span>
+                            <span class="category-list-amount">{{ row.total | money }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <p>No expenses in {{ month_label }} yet.</p>
+                    <a class="btn-primary" href="{{ url_for('new_expense') }}">Add your first expense</a>
+                </div>
+            {% endif %}
+        </article>
+
+        <article class="card">
+            <header class="card-header">
+                <h2 class="card-title">Recent expenses</h2>
+            </header>
+            {% if recent %}
+                <ul class="recent-list">
+                    {% for r in recent %}
+                        <li class="recent-item">
+                            <a href="{{ url_for('edit_expense', expense_id=r.id) }}" class="recent-link">
+                                <span class="recent-name">{{ r.category_name }}</span>
+                                <span class="recent-amount">{{ r.amount | money }}</span>
+                            </a>
+                            <span class="recent-date">{{ r.date | humandate }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <p>Nothing logged yet. Your latest 5 will appear here.</p>
+                </div>
+            {% endif %}
+        </article>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block scripts %}
+{% if by_category %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    (function () {
+        const data = {
+            labels: {{ by_category | map(attribute='category_name') | list | tojson }},
+            values: {{ by_category | map(attribute='total') | list | tojson }},
+        };
+        const ctx = document.getElementById('category-chart');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: data.labels,
+                datasets: [{
+                    data: data.values,
+                    backgroundColor: ['#1a472a', '#c17f24', '#5b7fa6', '#8b5e83', '#a44a3f', '#7d8471'],
+                    borderWidth: 0,
+                }],
+            },
+            options: {
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { family: 'DM Sans' } } },
+                },
+                cutout: '60%',
+            },
+        });
+    })();
+</script>
+{% endif %}
+{% endblock %}

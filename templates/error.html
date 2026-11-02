@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}{{ code }} — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="page">
+    <div class="empty-state card error-state">
+        <p class="error-code">{{ code }}</p>
+        <h1 class="page-title">{{ message }}</h1>
+        <a class="btn-primary" href="{{ url_for('landing') }}">Back to home</a>
+    </div>
+</section>
+
+{% endblock %}

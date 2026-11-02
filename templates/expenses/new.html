@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Add expense — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="page">
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow"><a href="{{ url_for('list_expenses') }}">Expenses</a></p>
+            <h1 class="page-title">Add an expense</h1>
+        </div>
+    </header>
+
+    <div class="form-card">
+        {% if error %}
+            <div class="auth-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('new_expense') }}">
+            <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+            {% with source = 'new', form = form if form is defined else _empty_expense_form() %}
+                {% include "expenses/_form.html" %}
+            {% endwith %}
+            <div class="form-actions">
+                <a class="btn-ghost" href="{{ url_for('list_expenses') }}">Cancel</a>
+                <button type="submit" class="btn-primary">Add expense</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+{% endblock %}

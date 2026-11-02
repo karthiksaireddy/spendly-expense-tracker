@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Expenses — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="page">
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow">All transactions</p>
+            <h1 class="page-title">Your expenses</h1>
+        </div>
+        <a class="btn-primary" href="{{ url_for('new_expense') }}">Add expense</a>
+    </header>
+
+    <form method="GET" action="{{ url_for('list_expenses') }}" class="filter-bar">
+        <div class="form-group">
+            <label for="search">Search</label>
+            <input type="text" id="search" name="search" class="form-input" placeholder="Search by note..." value="{{ filters.search or '' }}">
+        </div>
+        <div class="form-group">
+            <label for="from">From</label>
+            <input type="date" id="from" name="from" class="form-input" value="{{ filters.from }}">
+        </div>
+        <div class="form-group">
+            <label for="to">To</label>
+            <input type="date" id="to" name="to" class="form-input" value="{{ filters.to }}">
+        </div>
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" name="category" class="form-input">
+                <option value="">All categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if filters.category == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="sort">Sort by</label>
+            <select id="sort" name="sort" class="form-input">
+                <option value="date-desc" {% if filters.sort == 'date-desc' or not filters.sort %}selected{% endif %}>Date (newest)</option>
+                <option value="date-asc" {% if filters.sort == 'date-asc' %}selected{% endif %}>Date (oldest)</option>
+                <option value="amount-desc" {% if filters.sort == 'amount-desc' %}selected{% endif %}>Amount (highest)</option>
+                <option value="amount-asc" {% if filters.sort == 'amount-asc' %}selected{% endif %}>Amount (lowest)</option>
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Filter</button>
+            <a class="btn-ghost" href="{{ url_for('list_expenses') }}">Clear</a>
+        </div>
+    </form>
+
+    {% if expenses %}
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Note</th>
+                        <th class="num">Amount</th>
+                        <th class="actions-col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for e in expenses %}
+                    <tr>
+                        <td>{{ e.date | humandate }}</td>
+                        <td>{{ e.category_name }}</td>
+                        <td class="note-cell">{{ e.note or '—' }}</td>
+                        <td class="num">{{ e.amount | money }}</td>
+                        <td class="actions-col">
+                            <a class="row-action" href="{{ url_for('edit_expense', expense_id=e.id) }}">Edit</a>
+                            <form method="POST" action="{{ url_for('delete_expense', expense_id=e.id) }}" class="inline-form" data-confirm="Delete this expense?">
+                                <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                                <button type="submit" class="row-action row-action-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="total-label">Total</td>
+                        <td class="num total-amount">{{ total | money }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state card">
+            <p>No expenses match your filters.</p>
+            <a class="btn-primary" href="{{ url_for('new_expense') }}">Add an expense</a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}

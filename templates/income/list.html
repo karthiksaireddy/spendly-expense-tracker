@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Income — Spendly{% endblock %}
+
+{% block content %}
+
+<section class="page">
+    <header class="page-header">
+        <div>
+            <p class="page-eyebrow">All transactions</p>
+            <h1 class="page-title">Your income</h1>
+        </div>
+        <a class="btn-primary" href="{{ url_for('new_income') }}">Add income</a>
+    </header>
+
+    <form method="GET" action="{{ url_for('list_income') }}" class="filter-bar">
+        <div class="form-group">
+            <label for="from">From</label>
+            <input type="date" id="from" name="from" class="form-input" value="{{ filters.from }}">
+        </div>
+        <div class="form-group">
+            <label for="to">To</label>
+            <input type="date" id="to" name="to" class="form-input" value="{{ filters.to }}">
+        </div>
+        <div class="form-group">
+            <label for="category">Category</label>
+            <select id="category" name="category" class="form-input">
+                <option value="">All categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if filters.category == cat.id|string %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="btn-primary">Filter</button>
+            <a class="btn-ghost" href="{{ url_for('list_income') }}">Clear</a>
+        </div>
+    </form>
+
+    {% if income %}
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Note</th>
+                        <th class="num">Amount</th>
+                        <th class="actions-col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for i in income %}
+                    <tr>
+                        <td>{{ i.date | humandate }}</td>
+                        <td>{{ i.category_name }}</td>
+                        <td class="note-cell">{{ i.note or '—' }}</td>
+                        <td class="num">{{ i.amount | money }}</td>
+                        <td class="actions-col">
+                            <a class="row-action" href="{{ url_for('edit_income', income_id=i.id) }}">Edit</a>
+                            <form method="POST" action="{{ url_for('delete_income', income_id=i.id) }}" class="inline-form" data-confirm="Delete this income?">
+                                <input type="hidden" name="_csrf" value="{{ csrf_token() }}">
+                                <button type="submit" class="row-action row-action-danger">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="total-label">Total</td>
+                        <td class="num total-amount">{{ total | money }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    {% else %}
+        <div class="empty-state card">
+            <p>No income match your filters.</p>
+            <a class="btn-primary" href="{{ url_for('new_income') }}">Add income</a>
+        </div>
+    {% endif %}
+</section>
+
+{% endblock %}
